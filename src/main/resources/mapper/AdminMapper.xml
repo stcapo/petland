@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petland.repository.AdminRepository">
+    
+    <resultMap id="adminMap" type="com.petland.entity.Admin">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <association property="user" javaType="com.petland.entity.User">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="passwd" column="passwd"/>
+            <result property="role" column="role"/>
+            <result property="createdAt" column="user_created_at"/>
+        </association>
+    </resultMap>
+    
+    <select id="findById" resultMap="adminMap">
+        SELECT a.*, u.username, u.passwd, u.role, u.created_at as user_created_at
+        FROM admin a
+        LEFT JOIN user u ON a.user_id = u.id
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="findByUserId" resultMap="adminMap">
+        SELECT a.*, u.username, u.passwd, u.role, u.created_at as user_created_at
+        FROM admin a
+        LEFT JOIN user u ON a.user_id = u.id
+        WHERE a.user_id = #{userId}
+    </select>
+    
+    <select id="findAll" resultMap="adminMap">
+        SELECT a.*, u.username, u.passwd, u.role, u.created_at as user_created_at
+        FROM admin a
+        LEFT JOIN user u ON a.user_id = u.id
+    </select>
+    
+    <insert id="insert" parameterType="com.petland.entity.Admin" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO admin (user_id)
+        VALUES (#{userId})
+    </insert>
+    
+    <update id="update" parameterType="com.petland.entity.Admin">
+        UPDATE admin
+        SET user_id = #{userId}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM admin WHERE id = #{id}
+    </delete>
+    
+</mapper>

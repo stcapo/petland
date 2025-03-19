@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 萌宠乐园管理平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f5f7;
+            background-image: url('https://source.unsplash.com/random/1920x1080/?pets');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .login-container {
+            width: 400px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            font-size: 28px;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        
+        .login-form .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .login-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .login-footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>萌宠乐园管理平台</h1>
+            <p>欢迎回来，请登录您的账号</p>
+        </div>
+        
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="username" class="form-label">用户名</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="passwd" class="form-label">密码</label>
+                <input type="password" id="passwd" name="passwd" class="form-control" required>
+            </div>
+            
+            <button type="submit" class="login-button">登录</button>
+        </form>
+        
+        <div class="login-footer">
+            <p>萌宠乐园 © 2025 版权所有</p>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm('loginForm')) {
+                return;
+            }
+            
+            const formData = getFormData('loginForm');
+            
+            ajaxPost('/api/user/login', formData, function(response) {
+                if (response.code === 200) {
+                    // 保存用户信息到会话存储
+                    sessionStorage.setItem('user', JSON.stringify(response.data));
+                    
+                    showAlert('登录成功，正在跳转...', 'success');
+                    
+                    // 根据角色跳转到不同页面
+                    setTimeout(function() {
+                        if (response.data.role === 'admin') {
+                            window.location.href = 'admin/index.html';
+                        } else if (response.data.role === 'staff') {
+                            window.location.href = 'staff/index.html';
+                        } else {
+                            window.location.href = 'user/index.html';
+                        }
+                    }, 1500);
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

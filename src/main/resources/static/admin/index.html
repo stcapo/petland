@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员控制台 - 萌宠乐园管理平台</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">萌宠乐园管理平台</div>
+            <ul class="navbar-nav">
+                <li><a href="index.html" class="active">首页</a></li>
+                <li><a href="users.html">用户管理</a></li>
+                <li><a href="pets.html">宠物管理</a></li>
+                <li><a href="reservations.html">预约管理</a></li>
+                <li><a href="products.html">商品管理</a></li>
+                <li><a href="orders.html">订单管理</a></li>
+                <li><a href="finances.html">财务管理</a></li>
+                <li><a href="javascript:void(0);" onclick="logout()">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- 内容区 -->
+    <div class="container">
+        <h1>管理员控制台</h1>
+        <p>欢迎回来，<span id="adminName"></span>！</p>
+        
+        <!-- 统计面板 -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>总用户数</h3>
+                <div class="stat-value" id="totalUsers">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>今日预约</h3>
+                <div class="stat-value" id="todayReservations">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>总订单数</h3>
+                <div class="stat-value" id="totalOrders">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>总收入</h3>
+                <div class="stat-value" id="totalIncome">¥0.00</div>
+            </div>
+        </div>
+        
+        <!-- 系统概况 -->
+        <div class="card">
+            <div class="card-header">系统概况</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <h3>基本信息</h3>
+                        <table class="table">
+                            <tr>
+                                <td>系统版本</td>
+                                <td>1.0.0</td>
+                            </tr>
+                            <tr>
+                                <td>服务器时间</td>
+                                <td id="serverTime"></td>
+                            </tr>
+                            <tr>
+                                <td>系统运行时间</td>
+                                <td>30天</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-6">
+                        <h3>最近活动</h3>
+                        <ul class="activity-list" id="recentActivities">
+                            <li>暂无活动记录</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 快捷入口 -->
+        <h2>快捷入口</h2>
+        <div class="card">
+            <div class="card-body">
+                <div class="shortcuts">
+                    <a href="users.html" class="shortcut-item">
+                        <div class="shortcut-icon">👤</div>
+                        <div class="shortcut-title">用户管理</div>
+                    </a>
+                    <a href="pets.html" class="shortcut-item">
+                        <div class="shortcut-icon">🐶</div>
+                        <div class="shortcut-title">宠物管理</div>
+                    </a>
+                    <a href="reservations.html" class="shortcut-item">
+                        <div class="shortcut-icon">📅</div>
+                        <div class="shortcut-title">预约管理</div>
+                    </a>
+                    <a href="products.html" class="shortcut-item">
+                        <div class="shortcut-icon">🛒</div>
+                        <div class="shortcut-title">商品管理</div>
+                    </a>
+                    <a href="orders.html" class="shortcut-item">
+                        <div class="shortcut-icon">📦</div>
+                        <div class="shortcut-title">订单管理</div>
+                    </a>
+                    <a href="finances.html" class="shortcut-item">
+                        <div class="shortcut-icon">💰</div>
+                        <div class="shortcut-title">财务管理</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/common.js"></script>
+    <script>
+        // 检查用户是否登录
+        if (!checkLogin()) {
+            window.location.href = '../login.html';
+        }
+        
+        // 获取用户信息
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        document.getElementById('adminName').textContent = user.username;
+        
+        // 更新服务器时间
+        function updateServerTime() {
+            const now = new Date();
+            document.getElementById('serverTime').textContent = formatDate(now);
+        }
+        
+        // 获取统计数据
+        function fetchStats() {
+            // 获取用户总数
+            ajaxGet('/api/user', function(response) {
+                if (response.code === 200) {
+                    document.getElementById('totalUsers').textContent = response.data.length;
+                }
+            });
+            
+            // 获取今日预约数
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            ajaxGet(`/api/reservation/time?startTime=${formatDate(today)}&endTime=${formatDate(tomorrow)}`, function(response) {
+                if (response.code === 200) {
+                    document.getElementById('todayReservations').textContent = response.data.length;
+                }
+            });
+            
+            // 获取订单总数
+            ajaxGet('/api/order', function(response) {
+                if (response.code === 200) {
+                    document.getElementById('totalOrders').textContent = response.data.length;
+                }
+            });
+            
+            // 获取总收入
+            ajaxGet('/api/income/total', function(response) {
+                if (response.code === 200) {
+                    document.getElementById('totalIncome').textContent = formatAmount(response.data);
+                }
+            });
+        }
+        
+        // 获取最近活动
+        function fetchRecentActivities() {
+            // 这里应该从后端获取最近活动记录
+            // 模拟数据
+            const activities = [
+                {time: '2025-03-19 09:30:22', description: '用户 张三 完成了一笔订单'},
+                {time: '2025-03-19 10:15:45', description: '新增宠物 "小花猫"'},
+                {time: '2025-03-19 11:05:33', description: '用户 李四 预约了入园服务'},
+                {time: '2025-03-19 13:22:17', description: '商品 "萌宠零食包" 库存更新'}
+            ];
+            
+            const activitiesList = document.getElementById('recentActivities');
+            activitiesList.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="activity-time">${activity.time}</span> - ${activity.description}`;
+                activitiesList.appendChild(li);
+            });
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            updateServerTime();
+            setInterval(updateServerTime, 1000);
+            
+            fetchStats();
+            fetchRecentActivities();
+        });
+    </script>
+    
+    <style>
+        .shortcuts {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+        .shortcut-item {
+            width: 23%;
+            min-width: 200px;
+            padding: 20px;
+            margin: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .shortcut-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .shortcut-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .shortcut-title {
+            font-weight: bold;
+        }
+        
+        .activity-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .activity-list li {
+            padding: 10px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .activity-time {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: -10px;
+        }
+        
+        .col-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .col-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            
+            .shortcut-item {
+                width: 100%;
+            }
+        }
+    </style>
+</body>
+</html>

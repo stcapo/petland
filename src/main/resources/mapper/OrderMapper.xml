@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petland.repository.OrderRepository">
+    
+    <resultMap id="orderMap" type="com.petland.entity.Order">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="productId" column="product_id"/>
+        <result property="quantity" column="quantity"/>
+        <result property="totalPrice" column="total_price"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="user" javaType="com.petland.entity.User">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+        </association>
+        <association property="product" javaType="com.petland.entity.Product">
+            <id property="id" column="product_id"/>
+            <result property="name" column="product_name"/>
+            <result property="price" column="product_price"/>
+        </association>
+    </resultMap>
+    
+    <select id="findById" resultMap="orderMap">
+        SELECT o.*, 
+               u.username,
+               p.name as product_name, p.price as product_price
+        FROM `order` o
+        LEFT JOIN user u ON o.user_id = u.id
+        LEFT JOIN product p ON o.product_id = p.id
+        WHERE o.id = #{id}
+    </select>
+    
+    <select id="findAll" resultMap="orderMap">
+        SELECT o.*, 
+               u.username,
+               p.name as product_name, p.price as product_price
+        FROM `order` o
+        LEFT JOIN user u ON o.user_id = u.id
+        LEFT JOIN product p ON o.product_id = p.id
+    </select>
+    
+    <select id="findByUserId" resultMap="orderMap">
+        SELECT o.*, 
+               u.username,
+               p.name as product_name, p.price as product_price
+        FROM `order` o
+        LEFT JOIN user u ON o.user_id = u.id
+        LEFT JOIN product p ON o.product_id = p.id
+        WHERE o.user_id = #{userId}
+    </select>
+    
+    <select id="findByProductId" resultMap="orderMap">
+        SELECT o.*, 
+               u.username,
+               p.name as product_name, p.price as product_price
+        FROM `order` o
+        LEFT JOIN user u ON o.user_id = u.id
+        LEFT JOIN product p ON o.product_id = p.id
+        WHERE o.product_id = #{productId}
+    </select>
+    
+    <select id="findByStatus" resultMap="orderMap">
+        SELECT o.*, 
+               u.username,
+               p.name as product_name, p.price as product_price
+        FROM `order` o
+        LEFT JOIN user u ON o.user_id = u.id
+        LEFT JOIN product p ON o.product_id = p.id
+        WHERE o.status = #{status}
+    </select>
+    
+    <select id="findByTimeRange" resultMap="orderMap">
+        SELECT o.*, 
+               u.username,
+               p.name as product_name, p.price as product_price
+        FROM `order` o
+        LEFT JOIN user u ON o.user_id = u.id
+        LEFT JOIN product p ON o.product_id = p.id
+        WHERE o.created_at BETWEEN #{param1} AND #{param2}
+    </select>
+    
+    <insert id="insert" parameterType="com.petland.entity.Order" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `order` (user_id, product_id, quantity, total_price, status)
+        VALUES (#{userId}, #{productId}, #{quantity}, #{totalPrice}, #{status})
+    </insert>
+    
+    <update id="update" parameterType="com.petland.entity.Order">
+        UPDATE `order`
+        SET user_id = #{userId},
+            product_id = #{productId},
+            quantity = #{quantity},
+            total_price = #{totalPrice},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="updateStatus">
+        UPDATE `order`
+        SET status = #{param2}
+        WHERE id = #{param1}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM `order` WHERE id = #{id}
+    </delete>
+    
+</mapper>

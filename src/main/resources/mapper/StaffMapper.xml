@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petland.repository.StaffRepository">
+    
+    <resultMap id="staffMap" type="com.petland.entity.Staff">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="role" column="role"/>
+        <association property="user" javaType="com.petland.entity.User">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="passwd" column="passwd"/>
+            <result property="role" column="user_role"/>
+            <result property="createdAt" column="user_created_at"/>
+        </association>
+    </resultMap>
+    
+    <select id="findById" resultMap="staffMap">
+        SELECT s.*, u.username, u.passwd, u.role as user_role, u.created_at as user_created_at
+        FROM staff s
+        LEFT JOIN user u ON s.user_id = u.id
+        WHERE s.id = #{id}
+    </select>
+    
+    <select id="findByUserId" resultMap="staffMap">
+        SELECT s.*, u.username, u.passwd, u.role as user_role, u.created_at as user_created_at
+        FROM staff s
+        LEFT JOIN user u ON s.user_id = u.id
+        WHERE s.user_id = #{userId}
+    </select>
+    
+    <select id="findAll" resultMap="staffMap">
+        SELECT s.*, u.username, u.passwd, u.role as user_role, u.created_at as user_created_at
+        FROM staff s
+        LEFT JOIN user u ON s.user_id = u.id
+    </select>
+    
+    <select id="findByRole" resultMap="staffMap">
+        SELECT s.*, u.username, u.passwd, u.role as user_role, u.created_at as user_created_at
+        FROM staff s
+        LEFT JOIN user u ON s.user_id = u.id
+        WHERE s.role = #{role}
+    </select>
+    
+    <insert id="insert" parameterType="com.petland.entity.Staff" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO staff (user_id, role)
+        VALUES (#{userId}, #{role})
+    </insert>
+    
+    <update id="update" parameterType="com.petland.entity.Staff">
+        UPDATE staff
+        SET user_id = #{userId},
+            role = #{role}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM staff WHERE id = #{id}
+    </delete>
+    
+</mapper>

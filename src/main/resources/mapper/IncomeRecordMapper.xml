@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petland.repository.IncomeRecordRepository">
+    
+    <resultMap id="incomeRecordMap" type="com.petland.entity.IncomeRecord">
+        <id property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="amount" column="amount"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="order" javaType="com.petland.entity.Order">
+            <id property="id" column="order_id"/>
+            <result property="userId" column="user_id"/>
+            <result property="productId" column="product_id"/>
+            <result property="quantity" column="quantity"/>
+            <result property="totalPrice" column="total_price"/>
+            <result property="status" column="order_status"/>
+        </association>
+    </resultMap>
+    
+    <select id="findById" resultMap="incomeRecordMap">
+        SELECT ir.*, 
+               o.user_id, o.product_id, o.quantity, o.total_price, o.status as order_status
+        FROM income_record ir
+        LEFT JOIN `order` o ON ir.order_id = o.id
+        WHERE ir.id = #{id}
+    </select>
+    
+    <select id="findAll" resultMap="incomeRecordMap">
+        SELECT ir.*, 
+               o.user_id, o.product_id, o.quantity, o.total_price, o.status as order_status
+        FROM income_record ir
+        LEFT JOIN `order` o ON ir.order_id = o.id
+    </select>
+    
+    <select id="findByOrderId" resultMap="incomeRecordMap">
+        SELECT ir.*, 
+               o.user_id, o.product_id, o.quantity, o.total_price, o.status as order_status
+        FROM income_record ir
+        LEFT JOIN `order` o ON ir.order_id = o.id
+        WHERE ir.order_id = #{orderId}
+    </select>
+    
+    <select id="findByAmountRange" resultMap="incomeRecordMap">
+        SELECT ir.*, 
+               o.user_id, o.product_id, o.quantity, o.total_price, o.status as order_status
+        FROM income_record ir
+        LEFT JOIN `order` o ON ir.order_id = o.id
+        WHERE ir.amount BETWEEN #{param1} AND #{param2}
+    </select>
+    
+    <select id="findByTimeRange" resultMap="incomeRecordMap">
+        SELECT ir.*, 
+               o.user_id, o.product_id, o.quantity, o.total_price, o.status as order_status
+        FROM income_record ir
+        LEFT JOIN `order` o ON ir.order_id = o.id
+        WHERE ir.created_at BETWEEN #{param1} AND #{param2}
+    </select>
+    
+    <select id="getTotalIncome" resultType="java.math.BigDecimal">
+        SELECT SUM(amount) FROM income_record
+    </select>
+    
+    <select id="getTotalIncomeByTimeRange" resultType="java.math.BigDecimal">
+        SELECT SUM(amount) FROM income_record
+        WHERE created_at BETWEEN #{param1} AND #{param2}
+    </select>
+    
+    <insert id="insert" parameterType="com.petland.entity.IncomeRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO income_record (order_id, amount)
+        VALUES (#{orderId}, #{amount})
+    </insert>
+    
+    <update id="update" parameterType="com.petland.entity.IncomeRecord">
+        UPDATE income_record
+        SET order_id = #{orderId},
+            amount = #{amount}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM income_record WHERE id = #{id}
+    </delete>
+    
+</mapper>

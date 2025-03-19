@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物管理 - 萌宠乐园管理平台</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">萌宠乐园管理平台</div>
+            <ul class="navbar-nav">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="users.html">用户管理</a></li>
+                <li><a href="pets.html" class="active">宠物管理</a></li>
+                <li><a href="reservations.html">预约管理</a></li>
+                <li><a href="products.html">商品管理</a></li>
+                <li><a href="orders.html">订单管理</a></li>
+                <li><a href="finances.html">财务管理</a></li>
+                <li><a href="javascript:void(0);" onclick="logout()">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- 内容区 -->
+    <div class="container">
+        <h1>宠物管理</h1>
+        
+        <!-- 操作面板 -->
+        <div class="card">
+            <div class="card-body">
+                <div class="action-panel">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" class="form-control" placeholder="搜索宠物名称...">
+                        <select id="typeFilter" class="form-control">
+                            <option value="">全部类型</option>
+                            <option value="猫咪">猫咪</option>
+                            <option value="狗狗">狗狗</option>
+                            <option value="兔子">兔子</option>
+                            <option value="仓鼠">仓鼠</option>
+                            <option value="鹦鹉">鹦鹉</option>
+                            <option value="乌龟">乌龟</option>
+                        </select>
+                        <select id="statusFilter" class="form-control">
+                            <option value="">全部状态</option>
+                            <option value="展示中">展示中</option>
+                            <option value="休息中">休息中</option>
+                            <option value="生病">生病</option>
+                            <option value="繁殖中">繁殖中</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="searchPets()">搜索</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openAddPetModal()">添加宠物</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 宠物列表 -->
+        <div class="card">
+            <div class="card-header">宠物列表</div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+                            <th>类型</th>
+                            <th>状态</th>
+                            <th>入园时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="petTableBody">
+                        <!-- 宠物数据将通过JavaScript动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加/编辑宠物模态框 -->
+    <div id="petModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="petModalTitle">添加宠物</h2>
+                <span class="close-button">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="petForm">
+                    <input type="hidden" id="petId" name="id">
+                    
+                    <div class="form-group">
+                        <label for="name" class="form-label">宠物名称</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="type" class="form-label">宠物类型</label>
+                        <select id="type" name="type" class="form-control" required>
+                            <option value="猫咪">猫咪</option>
+                            <option value="狗狗">狗狗</option>
+                            <option value="兔子">兔子</option>
+                            <option value="仓鼠">仓鼠</option>
+                            <option value="鹦鹉">鹦鹉</option>
+                            <option value="乌龟">乌龟</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status" class="form-label">宠物状态</label>
+                        <select id="status" name="status" class="form-control" required>
+                            <option value="展示中">展示中</option>
+                            <option value="休息中">休息中</option>
+                            <option value="生病">生病</option>
+                            <option value="繁殖中">繁殖中</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="closePetModal()">取消</button>
+                <button type="button" class="btn btn-success" onclick="savePet()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/common.js"></script>
+    <script>
+        // 检查用户是否登录
+        if (!checkLogin()) {
+            window.location.href = '../login.html';
+        }
+        
+        // 获取所有宠物
+        function loadPets() {
+            ajaxGet('/api/pet', function(response) {
+                if (response.code === 200) {
+                    renderPetTable(response.data);
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 渲染宠物表格
+        function renderPetTable(pets) {
+            const tableBody = document.getElementById('petTableBody');
+            tableBody.innerHTML = '';
+            
+            if (pets.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="6" class="text-center">暂无宠物数据</td>';
+                tableBody.appendChild(tr);
+                return;
+            }
+            
+            pets.forEach(pet => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${pet.id}</td>
+                    <td>${pet.name}</td>
+                    <td>${pet.type}</td>
+                    <td>${getStatusBadge(pet.status)}</td>
+                    <td>${formatDate(pet.createdAt)}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editPet(${pet.id})">编辑</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletePet(${pet.id})">删除</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+        
+        // 获取状态徽章
+        function getStatusBadge(status) {
+            let badgeClass = '';
+            
+            switch (status) {
+                case '展示中':
+                    badgeClass = 'badge-success';
+                    break;
+                case '休息中':
+                    badgeClass = 'badge-info';
+                    break;
+                case '生病':
+                    badgeClass = 'badge-danger';
+                    break;
+                case '繁殖中':
+                    badgeClass = 'badge-warning';
+                    break;
+                default:
+                    badgeClass = 'badge-secondary';
+            }
+            
+            return `<span class="badge ${badgeClass}">${status}</span>`;
+        }
+        
+        // 搜索宠物
+        function searchPets() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            ajaxGet('/api/pet', function(response) {
+                if (response.code === 200) {
+                    let filteredPets = response.data;
+                    
+                    // 按名称筛选
+                    if (keyword) {
+                        filteredPets = filteredPets.filter(pet => 
+                            pet.name.toLowerCase().includes(keyword.toLowerCase())
+                        );
+                    }
+                    
+                    // 按类型筛选
+                    if (typeFilter) {
+                        filteredPets = filteredPets.filter(pet => pet.type === typeFilter);
+                    }
+                    
+                    // 按状态筛选
+                    if (statusFilter) {
+                        filteredPets = filteredPets.filter(pet => pet.status === statusFilter);
+                    }
+                    
+                    renderPetTable(filteredPets);
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 打开添加宠物模态框
+        function openAddPetModal() {
+            document.getElementById('petModalTitle').textContent = '添加宠物';
+            clearForm('petForm');
+            openModal('petModal');
+        }
+        
+        // 关闭宠物模态框
+        function closePetModal() {
+            closeModal('petModal');
+        }
+        
+        // 编辑宠物
+        function editPet(id) {
+            ajaxGet(`/api/pet/${id}`, function(response) {
+                if (response.code === 200) {
+                    document.getElementById('petModalTitle').textContent = '编辑宠物';
+                    fillForm('petForm', response.data);
+                    openModal('petModal');
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 保存宠物
+        function savePet() {
+            if (!validateForm('petForm')) {
+                return;
+            }
+            
+            const formData = getFormData('petForm');
+            const isEdit = formData.id ? true : false;
+            
+            if (isEdit) {
+                // 编辑宠物
+                ajaxPut('/api/pet', formData, function(response) {
+                    if (response.code === 200) {
+                        showAlert('宠物更新成功', 'success');
+                        closePetModal();
+                        loadPets();
+                    } else {
+                        showAlert(response.message, 'danger');
+                    }
+                });
+            } else {
+                // 添加宠物
+                ajaxPost('/api/pet', formData, function(response) {
+                    if (response.code === 200) {
+                        showAlert('宠物添加成功', 'success');
+                        closePetModal();
+                        loadPets();
+                    } else {
+                        showAlert(response.message, 'danger');
+                    }
+                });
+            }
+        }
+        
+        // 删除宠物
+        function deletePet(id) {
+            confirmAction('确定要删除该宠物吗？此操作不可恢复！', function() {
+                ajaxDelete(`/api/pet/${id}`, function(response) {
+                    if (response.code === 200) {
+                        showAlert('宠物删除成功', 'success');
+                        loadPets();
+                    } else {
+                        showAlert(response.message, 'danger');
+                    }
+                });
+            });
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPets();
+            
+            // 搜索框回车事件
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchPets();
+                }
+            });
+        });
+    </script>
+    
+    <style>
+        .action-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 7px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .badge-success {
+            background-color: #2ecc71;
+        }
+        
+        .badge-info {
+            background-color: #3498db;
+        }
+        
+        .badge-danger {
+            background-color: #e74c3c;
+        }
+        
+        .badge-warning {
+            background-color: #f39c12;
+        }
+        
+        .badge-secondary {
+            background-color: #7f8c8d;
+        }
+    </style>
+</body>
+</html>

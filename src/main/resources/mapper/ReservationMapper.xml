@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petland.repository.ReservationRepository">
+    
+    <resultMap id="reservationMap" type="com.petland.entity.Reservation">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="petId" column="pet_id"/>
+        <result property="type" column="type"/>
+        <result property="status" column="status"/>
+        <result property="reservationTime" column="reservation_time"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="user" javaType="com.petland.entity.User">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="role" column="user_role"/>
+        </association>
+        <association property="pet" javaType="com.petland.entity.Pet">
+            <id property="id" column="pet_id"/>
+            <result property="name" column="pet_name"/>
+            <result property="type" column="pet_type"/>
+            <result property="status" column="pet_status"/>
+        </association>
+    </resultMap>
+    
+    <select id="findById" resultMap="reservationMap">
+        SELECT r.*, 
+               u.username, u.role as user_role,
+               p.name as pet_name, p.type as pet_type, p.status as pet_status
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN pet p ON r.pet_id = p.id
+        WHERE r.id = #{id}
+    </select>
+    
+    <select id="findAll" resultMap="reservationMap">
+        SELECT r.*, 
+               u.username, u.role as user_role,
+               p.name as pet_name, p.type as pet_type, p.status as pet_status
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN pet p ON r.pet_id = p.id
+    </select>
+    
+    <select id="findByUserId" resultMap="reservationMap">
+        SELECT r.*, 
+               u.username, u.role as user_role,
+               p.name as pet_name, p.type as pet_type, p.status as pet_status
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN pet p ON r.pet_id = p.id
+        WHERE r.user_id = #{userId}
+    </select>
+    
+    <select id="findByPetId" resultMap="reservationMap">
+        SELECT r.*, 
+               u.username, u.role as user_role,
+               p.name as pet_name, p.type as pet_type, p.status as pet_status
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN pet p ON r.pet_id = p.id
+        WHERE r.pet_id = #{petId}
+    </select>
+    
+    <select id="findByType" resultMap="reservationMap">
+        SELECT r.*, 
+               u.username, u.role as user_role,
+               p.name as pet_name, p.type as pet_type, p.status as pet_status
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN pet p ON r.pet_id = p.id
+        WHERE r.type = #{type}
+    </select>
+    
+    <select id="findByStatus" resultMap="reservationMap">
+        SELECT r.*, 
+               u.username, u.role as user_role,
+               p.name as pet_name, p.type as pet_type, p.status as pet_status
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN pet p ON r.pet_id = p.id
+        WHERE r.status = #{status}
+    </select>
+    
+    <select id="findByTimeRange" resultMap="reservationMap">
+        SELECT r.*, 
+               u.username, u.role as user_role,
+               p.name as pet_name, p.type as pet_type, p.status as pet_status
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN pet p ON r.pet_id = p.id
+        WHERE r.reservation_time BETWEEN #{param1} AND #{param2}
+    </select>
+    
+    <insert id="insert" parameterType="com.petland.entity.Reservation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO reservation (user_id, pet_id, type, status, reservation_time)
+        VALUES (#{userId}, #{petId}, #{type}, #{status}, #{reservationTime})
+    </insert>
+    
+    <update id="update" parameterType="com.petland.entity.Reservation">
+        UPDATE reservation
+        SET user_id = #{userId},
+            pet_id = #{petId},
+            type = #{type},
+            status = #{status},
+            reservation_time = #{reservationTime}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM reservation WHERE id = #{id}
+    </delete>
+    
+</mapper>

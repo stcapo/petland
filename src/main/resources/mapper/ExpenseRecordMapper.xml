@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petland.repository.ExpenseRecordRepository">
+    
+    <resultMap id="expenseRecordMap" type="com.petland.entity.ExpenseRecord">
+        <id property="id" column="id"/>
+        <result property="description" column="description"/>
+        <result property="amount" column="amount"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+    
+    <select id="findById" resultMap="expenseRecordMap">
+        SELECT * FROM expense_record WHERE id = #{id}
+    </select>
+    
+    <select id="findAll" resultMap="expenseRecordMap">
+        SELECT * FROM expense_record
+    </select>
+    
+    <select id="findByDescriptionLike" resultMap="expenseRecordMap">
+        SELECT * FROM expense_record WHERE description LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+    
+    <select id="findByAmountRange" resultMap="expenseRecordMap">
+        SELECT * FROM expense_record WHERE amount BETWEEN #{param1} AND #{param2}
+    </select>
+    
+    <select id="findByTimeRange" resultMap="expenseRecordMap">
+        SELECT * FROM expense_record WHERE created_at BETWEEN #{param1} AND #{param2}
+    </select>
+    
+    <select id="getTotalExpense" resultType="java.math.BigDecimal">
+        SELECT SUM(amount) FROM expense_record
+    </select>
+    
+    <select id="getTotalExpenseByTimeRange" resultType="java.math.BigDecimal">
+        SELECT SUM(amount) FROM expense_record
+        WHERE created_at BETWEEN #{param1} AND #{param2}
+    </select>
+    
+    <insert id="insert" parameterType="com.petland.entity.ExpenseRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO expense_record (description, amount)
+        VALUES (#{description}, #{amount})
+    </insert>
+    
+    <update id="update" parameterType="com.petland.entity.ExpenseRecord">
+        UPDATE expense_record
+        SET description = #{description},
+            amount = #{amount}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM expense_record WHERE id = #{id}
+    </delete>
+    
+</mapper>

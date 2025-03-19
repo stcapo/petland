@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - 萌宠乐园管理平台</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">萌宠乐园管理平台</div>
+            <ul class="navbar-nav">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="users.html" class="active">用户管理</a></li>
+                <li><a href="pets.html">宠物管理</a></li>
+                <li><a href="reservations.html">预约管理</a></li>
+                <li><a href="products.html">商品管理</a></li>
+                <li><a href="orders.html">订单管理</a></li>
+                <li><a href="finances.html">财务管理</a></li>
+                <li><a href="javascript:void(0);" onclick="logout()">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- 内容区 -->
+    <div class="container">
+        <h1>用户管理</h1>
+        
+        <!-- 操作面板 -->
+        <div class="card">
+            <div class="card-body">
+                <div class="action-panel">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" class="form-control" placeholder="搜索用户名...">
+                        <button class="btn btn-primary" onclick="searchUsers()">搜索</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openAddUserModal()">添加用户</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 用户列表 -->
+        <div class="card">
+            <div class="card-header">用户列表</div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>角色</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- 用户数据将通过JavaScript动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加/编辑用户模态框 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="userModalTitle">添加用户</h2>
+                <span class="close-button">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId" name="id">
+                    
+                    <div class="form-group">
+                        <label for="username" class="form-label">用户名</label>
+                        <input type="text" id="username" name="username" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="passwd" class="form-label">密码</label>
+                        <input type="password" id="passwd" name="passwd" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="role" class="form-label">角色</label>
+                        <select id="role" name="role" class="form-control" required>
+                            <option value="user">普通用户</option>
+                            <option value="staff">员工</option>
+                            <option value="admin">管理员</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="closeUserModal()">取消</button>
+                <button type="button" class="btn btn-success" onclick="saveUser()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/common.js"></script>
+    <script>
+        // 检查用户是否登录
+        if (!checkLogin()) {
+            window.location.href = '../login.html';
+        }
+        
+        // 获取所有用户
+        function loadUsers() {
+            ajaxGet('/api/user', function(response) {
+                if (response.code === 200) {
+                    renderUserTable(response.data);
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 渲染用户表格
+        function renderUserTable(users) {
+            const tableBody = document.getElementById('userTableBody');
+            tableBody.innerHTML = '';
+            
+            if (users.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="5" class="text-center">暂无用户数据</td>';
+                tableBody.appendChild(tr);
+                return;
+            }
+            
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${getRoleDisplayName(user.role)}</td>
+                    <td>${formatDate(user.createdAt)}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editUser(${user.id})">编辑</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">删除</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+        
+        // 获取角色显示名称
+        function getRoleDisplayName(role) {
+            switch (role) {
+                case 'admin':
+                    return '管理员';
+                case 'staff':
+                    return '员工';
+                case 'user':
+                    return '普通用户';
+                default:
+                    return role;
+            }
+        }
+        
+        // 搜索用户
+        function searchUsers() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (!keyword) {
+                loadUsers();
+                return;
+            }
+            
+            ajaxGet('/api/user', function(response) {
+                if (response.code === 200) {
+                    const filteredUsers = response.data.filter(user => 
+                        user.username.toLowerCase().includes(keyword.toLowerCase())
+                    );
+                    renderUserTable(filteredUsers);
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 打开添加用户模态框
+        function openAddUserModal() {
+            document.getElementById('userModalTitle').textContent = '添加用户';
+            clearForm('userForm');
+            openModal('userModal');
+        }
+        
+        // 关闭用户模态框
+        function closeUserModal() {
+            closeModal('userModal');
+        }
+        
+        // 编辑用户
+        function editUser(id) {
+            ajaxGet(`/api/user/${id}`, function(response) {
+                if (response.code === 200) {
+                    document.getElementById('userModalTitle').textContent = '编辑用户';
+                    fillForm('userForm', response.data);
+                    openModal('userModal');
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 保存用户
+        function saveUser() {
+            if (!validateForm('userForm')) {
+                return;
+            }
+            
+            const formData = getFormData('userForm');
+            const isEdit = formData.id ? true : false;
+            
+            if (isEdit) {
+                // 编辑用户
+                ajaxPut('/api/user', formData, function(response) {
+                    if (response.code === 200) {
+                        showAlert('用户更新成功', 'success');
+                        closeUserModal();
+                        loadUsers();
+                    } else {
+                        showAlert(response.message, 'danger');
+                    }
+                });
+            } else {
+                // 添加用户
+                ajaxPost('/api/user', formData, function(response) {
+                    if (response.code === 200) {
+                        showAlert('用户添加成功', 'success');
+                        closeUserModal();
+                        loadUsers();
+                    } else {
+                        showAlert(response.message, 'danger');
+                    }
+                });
+            }
+        }
+        
+        // 删除用户
+        function deleteUser(id) {
+            confirmAction('确定要删除该用户吗？此操作不可恢复！', function() {
+                ajaxDelete(`/api/user/${id}`, function(response) {
+                    if (response.code === 200) {
+                        showAlert('用户删除成功', 'success');
+                        loadUsers();
+                    } else {
+                        showAlert(response.message, 'danger');
+                    }
+                });
+            });
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+            
+            // 搜索框回车事件
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchUsers();
+                }
+            });
+        });
+    </script>
+    
+    <style>
+        .action-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+    </style>
+</body>
+</html>
