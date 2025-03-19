@@ -307,7 +307,8 @@ function logout() {
             sessionStorage.removeItem('user');
             showAlert('退出登录成功', 'success');
             setTimeout(() => {
-                window.location.href = 'login.html';
+                // 修改为重定向到根目录
+                window.location.href = '/';
             }, 1000);
         } else {
             showAlert(response.message, 'danger');

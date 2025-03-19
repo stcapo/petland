@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的预约 - 萌宠乐园</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .reservation-banner {
+            background-color: #3498db;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        
+        .reservation-banner h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .reservation-banner p {
+            font-size: 16px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .tab-header {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .tab-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab-item.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        .reservation-card {
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .reservation-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .reservation-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .reservation-type {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .reservation-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .reservation-body {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .reservation-info {
+            flex: 2;
+            min-width: 250px;
+        }
+        
+        .reservation-time {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .reservation-time strong {
+            font-weight: bold;
+        }
+        
+        .reservation-pet {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .pet-emoji {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .pet-details {
+            font-size: 16px;
+        }
+        
+        .pet-name {
+            font-weight: bold;
+        }
+        
+        .reservation-actions {
+            flex: 1;
+            min-width: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        
+        .btn-cancel {
+            padding: 8px 15px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-cancel:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            color: #7f8c8d;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+        
+        .btn-make-reservation {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-make-reservation:hover {
+            background-color: #2980b9;
+        }
+        
+        .new-reservation-btn {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">萌宠乐园</div>
+            <ul class="navbar-nav">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="pets.html">萌宠展示</a></li>
+                <li><a href="reservations.html" class="active">我的预约</a></li>
+                <li><a href="shop.html">周边商城</a></li>
+                <li><a href="orders.html">我的订单</a></li>
+                <li><a href="profile.html">个人中心</a></li>
+                <li><a href="javascript:void(0);" onclick="logout()">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- 内容区 -->
+    <div class="container">
+        <!-- 预约横幅 -->
+        <div class="reservation-banner">
+            <h1>我的预约</h1>
+            <p>在这里，您可以查看和管理您的所有预约记录。</p>
+        </div>
+        
+        <!-- 新增预约按钮 -->
+        <div class="new-reservation-btn">
+            <a href="pets.html" class="btn-make-reservation">新增预约</a>
+        </div>
+        
+        <!-- 选项卡 -->
+        <div class="tabs">
+            <div class="tab-header">
+                <div class="tab-item active" onclick="changeTab('all')">全部预约</div>
+                <div class="tab-item" onclick="changeTab('upcoming')">即将到来</div>
+                <div class="tab-item" onclick="changeTab('completed')">已完成</div>
+                <div class="tab-item" onclick="changeTab('cancelled')">已取消</div>
+            </div>
+            
+            <div class="tab-content">
+                <!-- 全部预约 -->
+                <div id="allTab" class="tab-pane active">
+                    <div id="allReservations"></div>
+                </div>
+                
+                <!-- 即将到来 -->
+                <div id="upcomingTab" class="tab-pane">
+                    <div id="upcomingReservations"></div>
+                </div>
+                
+                <!-- 已完成 -->
+                <div id="completedTab" class="tab-pane">
+                    <div id="completedReservations"></div>
+                </div>
+                
+                <!-- 已取消 -->
+                <div id="cancelledTab" class="tab-pane">
+                    <div id="cancelledReservations"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 确认取消模态框 -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">确认取消预约</h2>
+                <span class="close-button">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>您确定要取消此预约吗？取消后将无法恢复。</p>
+                <input type="hidden" id="cancelReservationId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">返回</button>
+                <button type="button" class="btn btn-danger" onclick="confirmCancel()">确认取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/common.js"></script>
+    <script>
+        // 检查用户是否登录
+        if (!checkLogin()) {
+            window.location.href = '../login.html';
+        }
+        
+        // 获取用户信息
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        
+        // 为不同类型的宠物分配表情符号
+        const petEmojis = {
+            '猫咪': '🐱',
+            '狗狗': '🐶',
+            '兔子': '🐰',
+            '仓鼠': '🐹',
+            '鹦鹉': '🦜',
+            '乌龟': '🐢'
+        };
+        
+        // 加载用户的预约记录
+        function loadUserReservations() {
+            ajaxGet(`/api/reservation/user/${user.id}`, function(response) {
+                if (response.code === 200) {
+                    const allReservations = response.data;
+                    
+                    // 按预约时间排序（从近到远）
+                    allReservations.sort((a, b) => new Date(b.reservationTime) - new Date(a.reservationTime));
+                    
+                    // 全部预约
+                    renderReservations('allReservations', allReservations);
+                    
+                    // 即将到来的预约（待确认和已确认）
+                    const upcoming = allReservations.filter(r => 
+                        (r.status === '待确认' || r.status === '已确认') && 
+                        new Date(r.reservationTime) > new Date()
+                    );
+                    renderReservations('upcomingReservations', upcoming);
+                    
+                    // 已完成的预约
+                    const completed = allReservations.filter(r => r.status === '已完成');
+                    renderReservations('completedReservations', completed);
+                    
+                    // 已取消的预约
+                    const cancelled = allReservations.filter(r => r.status === '已取消');
+                    renderReservations('cancelledReservations', cancelled);
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 渲染预约列表
+        function renderReservations(containerId, reservations) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (reservations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>暂无预约记录</h3>
+                        <p>您目前没有${containerId === 'allReservations' ? '' : '此类型的'}预约记录</p>
+                        <a href="pets.html" class="btn-make-reservation">立即预约</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            reservations.forEach(reservation => {
+                const reservationCard = document.createElement('div');
+                reservationCard.className = 'reservation-card';
+                
+                const statusClass = getStatusClass(reservation.status);
+                const reservationTime = new Date(reservation.reservationTime);
+                const isPast = reservationTime < new Date();
+                const canCancel = reservation.status === '待确认' || reservation.status === '已确认';
+                
+                // 宠物表情符号
+                let petInfo = '入园参观';
+                if (reservation.pet) {
+                    const petEmoji = petEmojis[reservation.pet.type] || '🐾';
+                    petInfo = `
+                        <div class="reservation-pet">
+                            <div class="pet-emoji">${petEmoji}</div>
+                            <div class="pet-details">
+                                <span class="pet-name">${reservation.pet.name}</span>
+                                <span class="pet-type">(${reservation.pet.type})</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                reservationCard.innerHTML = `
+                    <div class="reservation-header">
+                        <div class="reservation-type">${reservation.type}</div>
+                        <div class="reservation-status ${statusClass}">${reservation.status}</div>
+                    </div>
+                    <div class="reservation-body">
+                        <div class="reservation-info">
+                            <div class="reservation-time">
+                                <strong>预约时间：</strong>${formatDate(reservationTime)}
+                            </div>
+                            ${petInfo}
+                            <div class="reservation-created">
+                                <small>创建于 ${formatDate(new Date(reservation.createdAt))}</small>
+                            </div>
+                        </div>
+                        <div class="reservation-actions">
+                            ${canCancel && !isPast ? `
+                                <button class="btn-cancel" onclick="openCancelModal(${reservation.id})">取消预约</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(reservationCard);
+            });
+        }
+        
+        // 获取状态对应的样式类
+        function getStatusClass(status) {
+            switch (status) {
+                case '待确认':
+                    return 'badge-warning';
+                case '已确认':
+                    return 'badge-info';
+                case '已完成':
+                    return 'badge-success';
+                case '已取消':
+                    return 'badge-danger';
+                default:
+                    return 'badge-secondary';
+            }
+        }
+        
+        // 切换选项卡
+        function changeTab(tabId) {
+            // 更新选项卡头部
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.tab-item[onclick="changeTab('${tabId}')"]`).classList.add('active');
+            
+            // 更新选项卡内容
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            document.getElementById(`${tabId}Tab`).classList.add('active');
+        }
+        
+        // 打开取消预约模态框
+        function openCancelModal(reservationId) {
+            document.getElementById('cancelReservationId').value = reservationId;
+            openModal('cancelModal');
+        }
+        
+        // 关闭取消预约模态框
+        function closeCancelModal() {
+            closeModal('cancelModal');
+        }
+        
+        // 确认取消预约
+        function confirmCancel() {
+            const reservationId = document.getElementById('cancelReservationId').value;
+            
+            // 获取预约信息
+            ajaxGet(`/api/reservation/${reservationId}`, function(response) {
+                if (response.code === 200) {
+                    const reservation = response.data;
+                    reservation.status = '已取消';
+                    
+                    // 更新预约状态
+                    ajaxPut('/api/reservation', reservation, function(updateResponse) {
+                        if (updateResponse.code === 200) {
+                            showAlert('预约已成功取消', 'success');
+                            closeCancelModal();
+                            loadUserReservations();
+                        } else {
+                            showAlert(updateResponse.message, 'danger');
+                        }
+                    });
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserReservations();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的订单 - 萌宠乐园</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .order-banner {
+            background-color: #3498db;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        
+        .order-banner h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .order-banner p {
+            font-size: 16px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .tab-header {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .tab-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab-item.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        .order-card {
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .order-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .order-number {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .order-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .order-body {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .order-product {
+            flex: 2;
+            min-width: 250px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .product-emoji {
+            font-size: 48px;
+            margin-right: 20px;
+        }
+        
+        .product-details {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .product-meta {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .product-price {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .order-info {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .order-time {
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        
+        .order-price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .pay-btn {
+            padding: 8px 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .pay-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .cancel-btn {
+            padding: 8px 15px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            color: #7f8c8d;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+        
+        .shop-link {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .shop-link:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">萌宠乐园</div>
+            <ul class="navbar-nav">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="pets.html">萌宠展示</a></li>
+                <li><a href="reservations.html">我的预约</a></li>
+                <li><a href="shop.html">周边商城</a></li>
+                <li><a href="orders.html" class="active">我的订单</a></li>
+                <li><a href="profile.html">个人中心</a></li>
+                <li><a href="javascript:void(0);" onclick="logout()">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- 内容区 -->
+    <div class="container">
+        <!-- 订单横幅 -->
+        <div class="order-banner">
+            <h1>我的订单</h1>
+            <p>在这里，您可以查看和管理您的所有订单记录。</p>
+        </div>
+        
+        <!-- 选项卡 -->
+        <div class="tabs">
+            <div class="tab-header">
+                <div class="tab-item active" onclick="changeTab('all')">全部订单</div>
+                <div class="tab-item" onclick="changeTab('unpaid')">待支付</div>
+                <div class="tab-item" onclick="changeTab('paid')">已支付</div>
+                <div class="tab-item" onclick="changeTab('cancelled')">已取消</div>
+            </div>
+            
+            <div class="tab-content">
+                <!-- 全部订单 -->
+                <div id="allTab" class="tab-pane active">
+                    <div id="allOrders"></div>
+                </div>
+                
+                <!-- 待支付 -->
+                <div id="unpaidTab" class="tab-pane">
+                    <div id="unpaidOrders"></div>
+                </div>
+                
+                <!-- 已支付 -->
+                <div id="paidTab" class="tab-pane">
+                    <div id="paidOrders"></div>
+                </div>
+                
+                <!-- 已取消 -->
+                <div id="cancelledTab" class="tab-pane">
+                    <div id="cancelledOrders"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 确认取消模态框 -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">确认取消订单</h2>
+                <span class="close-button">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>您确定要取消此订单吗？取消后将无法恢复。</p>
+                <input type="hidden" id="cancelOrderId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">返回</button>
+                <button type="button" class="btn btn-danger" onclick="confirmCancel()">确认取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 确认支付模态框 -->
+    <div id="payModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">确认支付</h2>
+                <span class="close-button">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>您确定要支付此订单吗？</p>
+                <div class="pay-info">
+                    <p>订单金额: <span id="payAmount" class="text-danger"></span></p>
+                </div>
+                <input type="hidden" id="payOrderId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closePayModal()">返回</button>
+                <button type="button" class="btn btn-success" onclick="confirmPay()">确认支付</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/common.js"></script>
+    <script>
+        // 检查用户是否登录
+        if (!checkLogin()) {
+            window.location.href = '../login.html';
+        }
+        
+        // 获取用户信息
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        
+        // 为不同类型的商品分配表情符号
+        const productEmojis = {
+            '萌宠零食包': '🍪',
+            '宠物玩具套装': '🧸',
+            '宠物护理用品': '🧴',
+            '萌宠纪念照': '📷',
+            '宠物小屋': '🏠'
+        };
+        
+        // 加载用户的订单记录
+        function loadUserOrders() {
+            ajaxGet(`/api/order/user/${user.id}`, function(response) {
+                if (response.code === 200) {
+                    const allOrders = response.data;
+                    
+                    // 按订单创建时间排序（从新到旧）
+                    allOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    
+                    // 全部订单
+                    renderOrders('allOrders', allOrders);
+                    
+                    // 待支付订单
+                    const unpaid = allOrders.filter(o => o.status === '待支付');
+                    renderOrders('unpaidOrders', unpaid);
+                    
+                    // 已支付订单
+                    const paid = allOrders.filter(o => o.status === '已支付');
+                    renderOrders('paidOrders', paid);
+                    
+                    // 已取消订单
+                    const cancelled = allOrders.filter(o => o.status === '已取消');
+                    renderOrders('cancelledOrders', cancelled);
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 渲染订单列表
+        function renderOrders(containerId, orders) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>暂无订单记录</h3>
+                        <p>您目前没有${containerId === 'allOrders' ? '' : '此类型的'}订单记录</p>
+                        <a href="shop.html" class="shop-link">去购物</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            orders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card';
+                
+                const statusClass = getStatusClass(order.status);
+                const isPaid = order.status === '已支付';
+                const isCancelled = order.status === '已取消';
+                
+                // 商品表情符号
+                const productEmoji = order.product ? productEmojis[order.product.name] || '🎁' : '🎁';
+                
+                orderCard.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-number">订单号: ${order.id}</div>
+                        <div class="order-status ${statusClass}">${order.status}</div>
+                    </div>
+                    <div class="order-body">
+                        <div class="order-product">
+                            <div class="product-emoji">${productEmoji}</div>
+                            <div class="product-details">
+                                <div class="product-name">${order.product ? order.product.name : '未知商品'}</div>
+                                <div class="product-meta">
+                                    <span class="product-price">${order.product ? formatAmount(order.product.price) : '¥0.00'}</span>
+                                    <span class="product-quantity"> × ${order.quantity}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="order-info">
+                            <div class="order-time">订单时间: ${formatDate(new Date(order.createdAt))}</div>
+                            <div class="order-price">总计: ${formatAmount(order.totalPrice)}</div>
+                            <div class="order-actions">
+                                ${!isPaid && !isCancelled ? `
+                                    <button class="pay-btn" onclick="openPayModal(${order.id}, ${order.totalPrice})">立即支付</button>
+                                    <button class="cancel-btn" onclick="openCancelModal(${order.id})">取消订单</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(orderCard);
+            });
+        }
+        
+        // 获取状态对应的样式类
+        function getStatusClass(status) {
+            switch (status) {
+                case '待支付':
+                    return 'badge-warning';
+                case '已支付':
+                    return 'badge-success';
+                case '已取消':
+                    return 'badge-danger';
+                default:
+                    return 'badge-secondary';
+            }
+        }
+        
+        // 切换选项卡
+        function changeTab(tabId) {
+            // 更新选项卡头部
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.tab-item[onclick="changeTab('${tabId}')"]`).classList.add('active');
+            
+            // 更新选项卡内容
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            document.getElementById(`${tabId}Tab`).classList.add('active');
+        }
+        
+        // 打开取消订单模态框
+        function openCancelModal(orderId) {
+            document.getElementById('cancelOrderId').value = orderId;
+            openModal('cancelModal');
+        }
+        
+        // 关闭取消订单模态框
+        function closeCancelModal() {
+            closeModal('cancelModal');
+        }
+        
+        // 确认取消订单
+        function confirmCancel() {
+            const orderId = document.getElementById('cancelOrderId').value;
+            
+            // 获取订单信息
+            ajaxGet(`/api/order/${orderId}`, function(response) {
+                if (response.code === 200) {
+                    const order = response.data;
+                    order.status = '已取消';
+                    
+                    // 更新订单状态
+                    ajaxPut('/api/order', order, function(updateResponse) {
+                        if (updateResponse.code === 200) {
+                            showAlert('订单已成功取消', 'success');
+                            closeCancelModal();
+                            loadUserOrders();
+                        } else {
+                            showAlert(updateResponse.message, 'danger');
+                        }
+                    });
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 打开支付模态框
+        function openPayModal(orderId, totalPrice) {
+            document.getElementById('payOrderId').value = orderId;
+            document.getElementById('payAmount').textContent = formatAmount(totalPrice);
+            openModal('payModal');
+        }
+        
+        // 关闭支付模态框
+        function closePayModal() {
+            closeModal('payModal');
+        }
+        
+        // 确认支付订单
+        function confirmPay() {
+            const orderId = document.getElementById('payOrderId').value;
+            
+            // 获取订单信息
+            ajaxGet(`/api/order/${orderId}`, function(response) {
+                if (response.code === 200) {
+                    const order = response.data;
+                    order.status = '已支付';
+                    
+                    // 更新订单状态
+                    ajaxPut('/api/order', order, function(updateResponse) {
+                        if (updateResponse.code === 200) {
+                            showAlert('订单支付成功', 'success');
+                            closePayModal();
+                            loadUserOrders();
+                        } else {
+                            showAlert(updateResponse.message, 'danger');
+                        }
+                    });
+                } else {
+                    showAlert(response.message, 'danger');
+                }
+            });
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserOrders();
+        });
+    </script>
+</body>
+</html>
